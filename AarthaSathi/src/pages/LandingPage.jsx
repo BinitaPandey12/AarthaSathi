@@ -10,7 +10,6 @@ const LandingPage = () => {
   const images = [image1, image2, image3, image4];
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
 
-  // Auto-slide every 4 seconds
   useEffect(() => {
     const interval = setInterval(() => {
       setCurrentImageIndex((prevIndex) =>
@@ -22,7 +21,7 @@ const LandingPage = () => {
 
   return (
     <div className="landing-page">
-      {/* Navigation Bar */}
+      {/* Navigation */}
       <nav className="nav-container">
         <h1 className="logo">AarthaSathi</h1>
         <div className="nav-links">
@@ -40,12 +39,11 @@ const LandingPage = () => {
       {/* Hero Section */}
       <div className="hero-container">
         <div className="hero-content">
-          <h1>Empowering Women Through Microloans</h1>
+          <h1 className="hero-title">Empowering Women Through Microloans</h1>
           <p className="hero-description">
             Join AarthaSathi to support or receive financial assistance in a
             safe, women-only community built on trust.
           </p>
-
           <div className="cta-buttons">
             <a href="/lend" className="cta-btn lender-btn">
               I want to lend →
