@@ -7,11 +7,11 @@ const SignupPage = () => {
     const navigate = useNavigate();
 
   const [formData, setFormData] = useState({
-    firstName: "",
-    lastName: "",
+    fullName: "",
     email: "",
     password: "",
     address: "",
+      governmentId: "",
     idType: "",
     idNumber: "",
     idPhoto: null,
@@ -38,20 +38,13 @@ const SignupPage = () => {
       <form onSubmit={handleSubmit} className="signup-form">
         <h2>Create Your Account</h2>
 
-        <div className="name-fields">
-          <input
-            name="firstName"
-            placeholder="First Name"
-            onChange={handleChange}
-            required
-          />
-          <input
-            name="lastName"
-            placeholder="Last Name"
-            onChange={handleChange}
-            required
-          />
-        </div>
+       <input
+  name="fullName"
+  placeholder="Full Name"
+  onChange={handleChange}
+  required
+/>
+
 
         <input
           type="email"
@@ -75,23 +68,14 @@ const SignupPage = () => {
           onChange={handleChange}
           required
         />
-<div className="id-fields">
-  <select name="idType" onChange={handleChange} required>
-    <option value="">Select ID Type</option>
-    <option value="citizenship">Citizenship</option>
-    <option value="passport">Passport</option>
-  </select>
 
-  {/* Show ID Number input only if ID Type is selected */}
-  {formData.idType && (
-    <input
-      name="idNumber"
-      placeholder="ID Number"
-      onChange={handleChange}
-      required
-    />
-  )}
-</div>
+<input
+  type="text"
+  name="governmentId"
+  placeholder="Government ID"
+  onChange={handleChange}
+  required
+/>
 
         <div className="file-uploads">
           <label>
