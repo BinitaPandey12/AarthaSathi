@@ -103,20 +103,20 @@
 .create-account-btn:hover {
   background-color: #D9CBE3;
 }
-
-.back-home-btn {
-  width: 100%;
-  padding: 12px;
-  background-color: transparent;
-  color: #6a1b9a;
-  font-size: 15px;
-  font-weight: 500;
-  border: 2px solid #6a1b9a;
-  border-radius: 8px;
-  cursor: pointer;
-  transition: background-color 0.2s ease, color 0.2s ease;
+.login-redirect {
+  text-align: center;
+  font-size: 14px;
+  color: #555;
+  margin-top: 10px;
 }
 
-.back-home-btn:hover {
-  background-color: #f0f4ff;
+.login-redirect span {
+  color: #6a1b9a;
+  font-weight: 500;
+  cursor: pointer;
+  text-decoration: underline;
+}
+
+.login-redirect span:hover {
+  color: #4a148c;
 }

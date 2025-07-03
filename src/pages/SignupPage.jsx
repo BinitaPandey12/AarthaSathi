@@ -115,13 +115,10 @@ const SignupPage = () => {
 </div>
 
 <button className="create-account-btn">Create Account</button>
-  <button
-  type="button"
-  className="back-home-btn"
-  onClick={() => navigate("/")}
->
-  Back to Home
-</button>
+
+<p className="login-redirect">
+  Have an Account? <span onClick={() => navigate('/login')}>Login Here</span>
+</p>
 
 
       </form>
