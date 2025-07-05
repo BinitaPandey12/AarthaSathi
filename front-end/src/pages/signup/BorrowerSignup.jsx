@@ -8,6 +8,7 @@ const BorrowerSignup = () => {
   const [formData, setFormData] = useState({
     fullName: "",
     email: "",
+    password: "",
     address: "",
     idNumber: "",
     idPhoto: null,
@@ -38,6 +39,7 @@ const BorrowerSignup = () => {
       const data = new FormData();
       data.append("fullName", formData.fullName);
       data.append("email", formData.email);
+      data.append("password", formData.password);
       data.append("address", formData.address);
       data.append("idNumber", formData.idNumber);
       data.append("file", formData.idPhoto);
@@ -86,6 +88,14 @@ const BorrowerSignup = () => {
             type="email"
             name="email"
             placeholder="Email Address"
+            onChange={handleChange}
+            required
+          />
+
+          <input
+            type="password"
+            name="password"
+            placeholder="Password"
             onChange={handleChange}
             required
           />
