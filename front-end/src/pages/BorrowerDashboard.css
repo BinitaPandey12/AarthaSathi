@@ -1,0 +1,208 @@
+.borrower-dashboard {
+  max-width: 900px;
+  margin: 32px auto;
+  padding: 0 16px 32px 16px;
+  font-family: 'Inter', 'Segoe UI', Arial, sans-serif;
+  background: #f7f8fc;
+}
+
+.dashboard-card {
+  background: #fff;
+  border-radius: 18px;
+  box-shadow: 0 2px 16px 0 rgba(80, 80, 180, 0.07);
+  padding: 32px 28px 28px 28px;
+  margin-bottom: 32px;
+}
+
+.loan-status h2,
+.loan-request h2,
+.learn-section h2 {
+  font-size: 1.35rem;
+  font-weight: 700;
+  margin-bottom: 18px;
+  color: #23223a;
+}
+
+.progress-bar-container {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 6px;
+}
+.progress-label {
+  font-weight: 600;
+  color: #23223a;
+  font-size: 1rem;
+}
+.progress-label.goal {
+  margin-left: auto;
+}
+.progress-bar-bg {
+  flex: 1;
+  height: 8px;
+  background: #ecebfa;
+  border-radius: 6px;
+  overflow: hidden;
+  margin: 0 8px;
+}
+.progress-bar-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #7c3aed 60%, #a78bfa 100%);
+  border-radius: 6px;
+  transition: width 0.5s;
+}
+.progress-subtext {
+  font-size: 0.95rem;
+  color: #8b8b9c;
+  margin-bottom: 18px;
+}
+.status-stats {
+  display: flex;
+  gap: 18px;
+  margin-top: 8px;
+}
+.stat {
+  flex: 1;
+  background: #f6f3ff;
+  border-radius: 12px;
+  padding: 14px 0 10px 0;
+  text-align: center;
+}
+.stat-label {
+  font-size: 0.85rem;
+  color: #a78bfa;
+  font-weight: 600;
+  letter-spacing: 1px;
+  margin-bottom: 2px;
+}
+.stat-value {
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: #23223a;
+}
+.stat.lenders .stat-label { color: #a78bfa; }
+.stat.interest .stat-label { color: #7c8cfb; }
+.stat.days .stat-label { color: #6ee7b7; }
+.stat.days { background: #f0fdf4; }
+.stat.interest { background: #f1f5ff; }
+.stat.lenders { background: #f6f3ff; }
+
+/* Loan Request Form */
+.loan-request h2 {
+  margin-bottom: 18px;
+}
+.loan-form {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.loan-form label {
+  font-size: 1rem;
+  font-weight: 500;
+  color: #23223a;
+  margin-bottom: 2px;
+}
+.loan-form input,
+.loan-form select,
+.loan-form textarea {
+  padding: 10px 12px;
+  border: 1.5px solid #e5e7eb;
+  border-radius: 8px;
+  font-size: 1rem;
+  background: #fafaff;
+  transition: border 0.2s;
+  margin-bottom: 4px;
+}
+.loan-form input:focus,
+.loan-form select:focus,
+.loan-form textarea:focus {
+  border: 1.5px solid #a78bfa;
+  outline: none;
+}
+.loan-form textarea {
+  min-height: 60px;
+  resize: vertical;
+}
+.loan-form-row {
+  display: flex;
+  gap: 16px;
+}
+.loan-form-row > div {
+  flex: 1;
+}
+.submit-btn {
+  margin-top: 10px;
+  background: linear-gradient(90deg, #7c3aed 60%, #a78bfa 100%);
+  color: #fff;
+  font-weight: 700;
+  font-size: 1.1rem;
+  border: none;
+  border-radius: 8px;
+  padding: 12px 0;
+  cursor: pointer;
+  box-shadow: 0 2px 8px 0 rgba(124, 58, 237, 0.08);
+  transition: background 0.2s, box-shadow 0.2s;
+}
+.submit-btn:hover {
+  background: linear-gradient(90deg, #a78bfa 60%, #7c3aed 100%);
+  box-shadow: 0 4px 16px 0 rgba(124, 58, 237, 0.13);
+}
+
+/* Learn Before You Borrow */
+.learn-section {
+  margin-top: 18px;
+}
+.learn-cards {
+  display: flex;
+  gap: 18px;
+  margin-top: 12px;
+  flex-wrap: wrap;
+}
+.learn-card {
+  background: #f9fafb;
+  border-radius: 14px;
+  box-shadow: 0 1px 6px 0 rgba(80, 80, 180, 0.04);
+  padding: 18px 16px 14px 16px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  min-width: 260px;
+  flex: 1 1 260px;
+  max-width: 340px;
+}
+.learn-card img {
+  width: 64px;
+  height: 64px;
+  border-radius: 10px;
+  background: #fff;
+  object-fit: contain;
+  box-shadow: 0 1px 4px 0 rgba(124, 58, 237, 0.07);
+}
+.learn-title {
+  font-size: 1.08rem;
+  font-weight: 700;
+  color: #23223a;
+  margin-bottom: 2px;
+}
+.learn-desc {
+  font-size: 0.97rem;
+  color: #6b7280;
+}
+
+@media (max-width: 700px) {
+  .dashboard-card {
+    padding: 18px 8px 18px 8px;
+  }
+  .learn-cards {
+    flex-direction: column;
+    gap: 12px;
+  }
+  .learn-card {
+    min-width: 0;
+    max-width: 100%;
+  }
+  .loan-form-row {
+    flex-direction: column;
+    gap: 8px;
+  }
+} 
