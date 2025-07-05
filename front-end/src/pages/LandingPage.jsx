@@ -6,6 +6,7 @@ import image1 from "../assets/women.jpg";
 import image2 from "../assets/women1.jpg";
 import image3 from "../assets/women2.jpg";
 import image4 from "../assets/women3.jpg";
+import logo from "../assets/logo.png";
 
 const LandingPage = () => {
   const images = [image1, image2, image3, image4];
@@ -25,15 +26,22 @@ const LandingPage = () => {
     <div className="landing-page">
       {/* Navigation Bar */}
       <nav className="nav-container">
-        <h1 className="logo">AarthaSathi</h1>
+        <div className="logo-container">
+          <img
+            src={logo}
+            alt="AarthaSathi Logo"
+            className="logo-img"
+            style={{ height: "70px", width: "70px", objectFit: "contain" }}
+          />
+        </div>
         <div className="nav-links">
           <a href="/">Home</a>
           <a href="/how-it-works">How It Works</a>
           <a href="/about">About</a>
           <a href="/faq">FAQ</a>
-          <a href="/login">Login</a>
-        <Link to="/signup" className="signup-btn">Sign Up</Link>
-
+          <Link to="/login" className="login-btn">
+            Login
+          </Link>
         </div>
       </nav>
 

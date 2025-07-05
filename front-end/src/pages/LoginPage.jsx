@@ -1,15 +1,36 @@
 import React, { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import "./LoginPage.css"; // Create this CSS file
 
 const LoginPage = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
+  const navigate = useNavigate();
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    // Handle login logic here
-    console.log("Login submitted:", { email, password });
+    setError("");
+    setLoading(true);
+    try {
+      const response = await fetch("http://localhost:8080/api/auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password }),
+      });
+      if (!response.ok) {
+        const resData = await response.json();
+        setError(resData.message || "Login failed. Please try again.");
+        setLoading(false);
+        return;
+      }
+      // Success
+      navigate("/");
+    } catch {
+      setError("Network error. Please try again.");
+      setLoading(false);
+    }
   };
 
   return (
@@ -37,15 +58,37 @@ const LoginPage = () => {
               required
             />
           </div>
+          {error && (
+            <div style={{ color: "red", marginBottom: 8 }}>{error}</div>
+          )}
           <div className="forgot-password">
             <Link to="/forgot-password">Forgot password?</Link>
           </div>
-          <button type="submit" className="login-button">
-            Sign In
+          <button type="submit" className="login-button" disabled={loading}>
+            {loading ? "Signing in..." : "Sign In"}
           </button>
         </form>
-        <div className="signup-link">
-          Don't have an account? <Link to="/signup">Sign up</Link>
+      </div>
+
+      {/* Signup Options Box */}
+      <div className="signup-options">
+        <h3>New to AarthaSathi?</h3>
+        <p>Choose how you want to participate:</p>
+        <div className="signup-buttons">
+          <Link to="/lend" className="signup-option lender-option">
+            <div className="option-icon">💰</div>
+            <div className="option-content">
+              <h4>Become a Lender</h4>
+              <p>Support women entrepreneurs by providing microloans</p>
+            </div>
+          </Link>
+          <Link to="/borrow" className="signup-option borrower-option">
+            <div className="option-icon">🤝</div>
+            <div className="option-content">
+              <h4>Apply for a Loan</h4>
+              <p>Get financial support for your business or personal needs</p>
+            </div>
+          </Link>
         </div>
       </div>
     </div>
