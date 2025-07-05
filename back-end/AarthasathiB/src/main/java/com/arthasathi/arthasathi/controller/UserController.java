@@ -19,7 +19,7 @@ public class UserController {
     private UserService userService;
 
     // 🔵 Signup endpoint for BORROWER (clicked "Join as Borrower")
-    @PostMapping("/signup/borrower")
+    @PostMapping(value = "/signup/borrower", consumes = "multipart/form-data")
     public ResponseEntity<?> registerBorrower(
             @ModelAttribute UserSignUpRequest request,
             @RequestParam("file") MultipartFile file) {
@@ -29,7 +29,7 @@ public class UserController {
     }
 
     // 🟣 Signup endpoint for LENDER (clicked "Join as Lender")
-    @PostMapping("/signup/lender")
+    @PostMapping(value = "/signup/lender", consumes = "multipart/form-data")
     public ResponseEntity<?> registerLender(
             @ModelAttribute UserSignUpRequest request,
             @RequestParam("file") MultipartFile file) {
