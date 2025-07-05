@@ -1,5 +1,4 @@
 package com.arthasathi.arthasathi.Security;
-
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -16,9 +15,10 @@ public class WebConfig {
             @Override
             public void addCorsMappings(CorsRegistry registry) {
                 registry.addMapping("/**")
-                        .allowedOrigins("http://localhost:5176")
+                        .allowedOrigins("http://localhost:5173")
                         .allowedHeaders("*") // Allow all headers
-                        .allowedMethods("*");
+                        .allowedMethods("*")
+                        .allowCredentials(true);
 
             }
         };
