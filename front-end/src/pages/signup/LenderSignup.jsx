@@ -6,7 +6,7 @@ const LenderSignup = () => {
   const navigate = useNavigate();
 
   const [formData, setFormData] = useState({
-    fullName: "",
+    name: "",
     email: "",
     password: "",
     address: "",
@@ -16,6 +16,8 @@ const LenderSignup = () => {
 
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [showSuccess, setShowSuccess] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
 
   const handleChange = (e) => {
     const { name, value, type, files } = e.target;
@@ -25,6 +27,10 @@ const LenderSignup = () => {
       setFormData({ ...formData, [name]: value });
     }
     if (name === "email") setError("");
+  };
+
+  const togglePasswordVisibility = () => {
+    setShowPassword(!showPassword);
   };
 
   const handleSubmit = async (e) => {
@@ -37,7 +43,7 @@ const LenderSignup = () => {
     setError("");
     try {
       const data = new FormData();
-      data.append("fullName", formData.fullName);
+      data.append("name", formData.name);
       data.append("email", formData.email);
       data.append("password", formData.password);
       data.append("address", formData.address);
@@ -58,16 +64,38 @@ const LenderSignup = () => {
         setLoading(false);
         return;
       }
-      // Success
-      navigate("/lender-dashboard");
-    } catch {
-      setError("Network error. Please try again.");
+      // Success - show popup and redirect to login
+      setShowSuccess(true);
+      setLoading(false);
+      setTimeout(() => {
+        navigate("/login", {
+          state: {
+            message:
+              "Lender account created successfully! Please login to continue.",
+            userType: "lender",
+          },
+        });
+      }, 2000);
+    } catch (err) {
+      console.error("Signup error:", err);
+      setError(
+        "Network error. Please check if the backend server is running on http://localhost:8080"
+      );
       setLoading(false);
     }
   };
 
   return (
     <div className="lender-signup-container">
+      {showSuccess && (
+        <div className="success-popup">
+          <div className="success-content">
+            <h3>✅ Signup Successful!</h3>
+            <p>Your lender account has been created successfully.</p>
+            <p>Redirecting to login...</p>
+          </div>
+        </div>
+      )}
       <form onSubmit={handleSubmit} className="lender-signup-form">
         <h2>Become a Lender</h2>
         <p className="form-subtitle">
@@ -78,7 +106,7 @@ const LenderSignup = () => {
           <h3>Personal Information</h3>
 
           <input
-            name="fullName"
+            name="name"
             placeholder="Full Name"
             onChange={handleChange}
             required
@@ -92,16 +120,27 @@ const LenderSignup = () => {
             required
           />
 
-          <input
-            type="password"
-            name="password"
-            placeholder="Password"
-            onChange={handleChange}
-            required
-          />
+          <div className="password-input-container">
+            <input
+              type={showPassword ? "text" : "password"}
+              name="password"
+              placeholder="Password"
+              onChange={handleChange}
+              required
+            />
+            <button
+              type="button"
+              className="password-toggle-btn"
+              onClick={togglePasswordVisibility}
+            >
+              {showPassword ? "👁️" : "👁️‍🗨️"}
+            </button>
+          </div>
 
           {error && (
-            <div style={{ color: "red", marginBottom: 8 }}>{error}</div>
+            <div style={{ color: "red", marginBottom: 8, fontSize: "14px" }}>
+              {error}
+            </div>
           )}
 
           <textarea
