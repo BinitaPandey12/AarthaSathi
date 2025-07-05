@@ -40,7 +40,7 @@ const LenderSignup = () => {
       data.append("email", formData.email);
       data.append("address", formData.address);
       data.append("idNumber", formData.idNumber);
-      data.append("idPhoto", formData.idPhoto);
+      data.append("file", formData.idPhoto);
 
       const response = await fetch(
         "http://localhost:8080/api/auth/signup/lender",

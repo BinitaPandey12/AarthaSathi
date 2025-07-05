@@ -14,10 +14,13 @@ const LoginPage = () => {
     setError("");
     setLoading(true);
     try {
+      const data = new FormData();
+      data.append("email", email);
+      data.append("password", password);
+      // If your backend expects a file for login, add a file input and append here as data.append('file', file)
       const response = await fetch("http://localhost:8080/api/auth/login", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password }),
+        body: data,
       });
       if (!response.ok) {
         const resData = await response.json();
