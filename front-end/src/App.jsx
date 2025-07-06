@@ -6,6 +6,7 @@ import BorrowerSignup from "./pages/signup/BorrowerSignup";
 import LenderSignup from "./pages/signup/LenderSignup";
 import LenderDashboard from "./pages/LenderDashboard";
 import BorrowerDashboard from "./pages/BorrowerDashboard";
+
 import "./App.css";
 
 function App() {
@@ -18,6 +19,7 @@ function App() {
         <Route path="/lend" element={<LenderSignup />} />
         <Route path="/lender-dashboard" element={<LenderDashboard />} />
         <Route path="/borrower-dashboard" element={<BorrowerDashboard />} />
+       
       </Routes>
     </Router>
   );
