@@ -1,13 +1,13 @@
 body,
 .borrower-dashboard-root {
   font-family: "Inter", "Segoe UI", Arial, sans-serif;
-  background: #c7d3f0;
+  background: #d6dff3;
   color: #23223a;
 }
 .borrower-dashboard-root {
-  max-width: 1300px;
-  margin: 36px auto 36px auto;
-  padding: 0 24px 32px 24px;
+  max-width: 1800px;
+  margin: 0 auto 36px auto;
+  padding: 0 32px 32px 32px;
   display: flex;
   flex-direction: column;
 }
@@ -21,6 +21,7 @@ body,
   padding: 32px 36px 32px 32px;
   margin-bottom: 32px;
   gap: 32px;
+  margin-top: 28px;
 }
 .borrower-logo {
   height: 56px;

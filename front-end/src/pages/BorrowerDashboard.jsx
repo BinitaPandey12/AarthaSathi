@@ -328,7 +328,7 @@ export default function BorrowerDashboard() {
               ))}
             </div>
           </section>
-          {/* Create New Loan Request - Right Side */}
+          {/* Create New Loan Offer - Right Side */}
           <section className="borrower-section create-loan-section smart-offer-section">
             <div className="section-title">Create New Loan Request</div>
             <div className="create-loan-form">
