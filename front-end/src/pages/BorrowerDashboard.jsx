@@ -1,29 +1,8 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import logo from "../assets/logo.png";
 import "./BorrowerDashboard.css";
-
-const initialLenderOffers = [
-  {
-    id: 1,
-    lender: "Meena Patel",
-    avatar: "https://randomuser.me/api/portraits/women/44.jpg",
-    location: "Tailor, Mumbai",
-    amount: 15000,
-    interest: 18,
-    repayment: "15 Dec 2023",
-    trustScore: 7.2,
-  },
-  {
-    id: 2,
-    lender: "Sunita Devi",
-    avatar: "https://randomuser.me/api/portraits/women/45.jpg",
-    location: "Food Stall, Delhi",
-    amount: 8000,
-    interest: 15,
-    repayment: "30 Nov 2023",
-    trustScore: 8.1,
-  },
-];
+import { loanRequestAPI, loanOfferAPI } from "../services/api";
+import LoanRequestForm from "../components/LoanRequestForm";
 
 const initialActiveLoans = [
   {
@@ -51,18 +30,50 @@ const initialActiveLoans = [
 ];
 
 export default function BorrowerDashboard() {
-  const [lenderOffers, setLenderOffers] = useState(initialLenderOffers);
+  const [lenderOffers, setLenderOffers] = useState([]);
+  const [myLoanRequests, setMyLoanRequests] = useState([]);
   const [pendingLoans, setPendingLoans] = useState([]);
   const [activeLoans, setActiveLoans] = useState(initialActiveLoans);
   const [showOffer, setShowOffer] = useState(false);
   const [selectedOffer, setSelectedOffer] = useState(null);
   const [popup, setPopup] = useState({ show: false, message: "" });
-  const [newLoanForm, setNewLoanForm] = useState({
-    amount: "",
-    maxInterest: "",
-    repaymentDate: "",
-    description: "",
-  });
+  const [showLoanRequestForm, setShowLoanRequestForm] = useState(false);
+  const [loading, setLoading] = useState(false);
+
+  // Load data on component mount
+  useEffect(() => {
+    loadData();
+  }, []);
+
+  const loadData = async () => {
+    setLoading(true);
+    try {
+      // Load borrower's loan requests
+      const requests = await loanRequestAPI.getMyLoanRequests();
+      setMyLoanRequests(requests);
+
+      // Load loan offers from lenders
+      const offers = await loanOfferAPI.getAllLoanOffers();
+      setLenderOffers(offers);
+    } catch (error) {
+      console.error("Error loading data:", error);
+      setPopup({
+        show: true,
+        message: "Error loading data. Please try again.",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleCreateLoanRequest = () => {
+    setShowLoanRequestForm(true);
+  };
+
+  const handleLoanRequestSuccess = () => {
+    setPopup({ show: true, message: "Loan request created successfully!" });
+    loadData(); // Reload data
+  };
 
   // View Offer Modal logic
   const openOffer = (offer) => {
@@ -159,6 +170,48 @@ export default function BorrowerDashboard() {
             </div>
           </div>
         </header>
+
+        {/* My Loan Requests */}
+        <section className="borrower-section">
+          <div className="section-title">My Loan Requests</div>
+          <div className="section-desc">
+            Your active loan requests waiting for lender offers.
+          </div>
+          <div className="borrower-table-wrapper">
+            {myLoanRequests.length === 0 ? (
+              <div className="no-data">
+                No loan requests yet. Create your first request!
+              </div>
+            ) : (
+              <table className="borrower-table">
+                <thead>
+                  <tr>
+                    <th>Amount</th>
+                    <th>Max Interest</th>
+                    <th>Repayment Date</th>
+                    <th>Purpose</th>
+                    <th>Status</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {myLoanRequests.map((request) => (
+                    <tr key={request.id}>
+                      <td>₹{request.amount?.toLocaleString()}</td>
+                      <td>{request.maxInterestRate}%</td>
+                      <td>
+                        {new Date(request.repaymentDate).toLocaleDateString()}
+                      </td>
+                      <td>{request.purpose || "Not specified"}</td>
+                      <td>
+                        <span className="status-badge pending">Pending</span>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            )}
+          </div>
+        </section>
 
         {/* Loan Offers from Lenders */}
         <section className="borrower-section">
@@ -328,51 +381,20 @@ export default function BorrowerDashboard() {
               ))}
             </div>
           </section>
-          {/* Create New Loan Offer - Right Side */}
+          {/* Create New Loan Request - Right Side */}
           <section className="borrower-section create-loan-section smart-offer-section">
             <div className="section-title">Create New Loan Request</div>
-            <div className="create-loan-form">
-              <input
-                type="number"
-                placeholder="Loan Amount (₹)"
-                value={newLoanForm.amount}
-                onChange={(e) =>
-                  setNewLoanForm({ ...newLoanForm, amount: e.target.value })
-                }
-              />
-              <input
-                type="number"
-                placeholder="Max Interest Rate (%)"
-                value={newLoanForm.maxInterest}
-                onChange={(e) =>
-                  setNewLoanForm({
-                    ...newLoanForm,
-                    maxInterest: e.target.value,
-                  })
-                }
-              />
-              <input
-                type="text"
-                placeholder="Repayment Date (dd/mm/yyyy)"
-                value={newLoanForm.repaymentDate}
-                onChange={(e) =>
-                  setNewLoanForm({
-                    ...newLoanForm,
-                    repaymentDate: e.target.value,
-                  })
-                }
-              />
-              <textarea
-                placeholder="Brief Description"
-                value={newLoanForm.description}
-                onChange={(e) =>
-                  setNewLoanForm({
-                    ...newLoanForm,
-                    description: e.target.value,
-                  })
-                }
-              />
-              <button className="post-loan-btn">Post Loan Request</button>
+            <div className="create-loan-content">
+              <p className="section-desc">
+                Create a new loan request to get offers from lenders.
+              </p>
+              <button
+                className="create-request-btn"
+                onClick={handleCreateLoanRequest}
+                disabled={loading}
+              >
+                {loading ? "Loading..." : "Create New Request"}
+              </button>
             </div>
           </section>
         </div>
@@ -412,6 +434,14 @@ export default function BorrowerDashboard() {
               </div>
             </div>
           </div>
+        )}
+
+        {/* Loan Request Form Modal */}
+        {showLoanRequestForm && (
+          <LoanRequestForm
+            onClose={() => setShowLoanRequestForm(false)}
+            onSuccess={handleLoanRequestSuccess}
+          />
         )}
 
         {/* Popup */}

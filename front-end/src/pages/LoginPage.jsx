@@ -8,7 +8,7 @@ const LoginPage = () => {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [successMessage, setSuccessMessage] = useState("");
-  const [showPassword, setShowPassword] = useState(false);
+  const [showPassword] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -25,55 +25,55 @@ const LoginPage = () => {
     e.preventDefault();
     setError("");
     setLoading(true);
-    // try {
-    //   const loginData = {
-    //     email: email,
-    //     password: password,
-    //   };
+    try {
+      const loginData = {
+        email: email,
+        password: password,
+      };
 
-    //   const response = await fetch("http://localhost:8080/api/auth/login", {
-    //     method: "POST",
-    //     headers: {
-    //       "Content-Type": "application/json",
-    //     },
-    //     body: JSON.stringify(loginData),
-    //   });
+      const response = await fetch("http://localhost:8080/api/auth/login", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(loginData),
+      });
 
-    //   if (!response.ok) {
-    //     const resData = await response.json();
-    //     setError(resData.message || "Login failed. Please try again.");
-    //     setLoading(false);
-    //     return;
-    //   }
+      if (!response.ok) {
+        const resData = await response.json();
+        setError(resData.message || "Login failed. Please try again.");
+        setLoading(false);
+        return;
+      }
 
-    //   // Get user type from response
-    //   const userData = await response.json();
-    //   const userType = userData.userType || userData.role || "user";
+      // Get user type from response
+      const userData = await response.json();
+      const userType = userData.userType || userData.role || "user";
 
-    //   // Redirect based on user type
-    //   if (userType === "lender" || userType === "LENDER") {
-    //     navigate("/lender-dashboard");
-    //   } else if (userType === "borrower" || userType === "BORROWER") {
-    //     navigate("/borrower-dashboard");
-    //   } else {
-    //     // Default fallback
-    //     navigate("/");
-    //   }
-    // } catch (err) {
-    //   console.error("Login error:", err);
-    //   setError(
-    //     "Network error. Please check if the backend server is running on http://localhost:8080"
-    //   );
-    //   setLoading(false);
-    // }
+      // Redirect based on user type
+      if (userType === "lender" || userType === "LENDER") {
+        navigate("/lender-dashboard");
+      } else if (userType === "borrower" || userType === "BORROWER") {
+        navigate("/borrower-dashboard");
+      } else {
+        // Default fallback
+        navigate("/");
+      }
+    } catch (err) {
+      console.error("Login error:", err);
+      setError(
+        "Network error. Please check if the backend server is running on http://localhost:8080"
+      );
+      setLoading(false);
+    }
   };
-  // need to remove this at last
-  navigate("/lender-dashboard");
+  //   // need to remove this at last
+  //   navigate("/lender-dashboard");
 
-  const togglePasswordVisibility = () => {
-    setShowPassword(!showPassword);
-  };
-// till here
+  //   const togglePasswordVisibility = () => {
+  //     setShowPassword(!showPassword);
+  //   };
+  // // till here
   return (
     <div className="login-container">
       {successMessage && (
@@ -117,6 +117,7 @@ const LoginPage = () => {
               <button
                 type="button"
                 className="password-toggle-btn"
+                // eslint-disable-next-line no-undef
                 onClick={togglePasswordVisibility}
               >
                 {showPassword ? "👁️" : "👁️‍🗨️"}

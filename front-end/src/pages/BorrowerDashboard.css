@@ -392,3 +392,42 @@ body,
     padding: 10px 0;
   }
 }
+.create-loan-content {
+  padding: 20px;
+  text-align: center;
+}
+.create-request-btn {
+  background-color: #3b82f6;
+  color: white;
+  border: none;
+  padding: 12px 24px;
+  border-radius: 8px;
+  font-size: 16px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.2s;
+  margin-top: 16px;
+}
+.create-request-btn:hover:not(:disabled) {
+  background-color: #2563eb;
+}
+.create-request-btn:disabled {
+  background-color: #9ca3af;
+  cursor: not-allowed;
+}
+.no-data {
+  text-align: center;
+  padding: 40px 20px;
+  color: #6b7280;
+  font-style: italic;
+}
+.status-badge {
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 500;
+}
+.status-badge.pending {
+  background-color: #fef3c7;
+  color: #92400e;
+}

@@ -1,27 +1,8 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import logo from "../assets/logo.png";
 import "./LenderDashboard.css";
-
-const initialLoanOffers = [
-  {
-    id: 1,
-    borrower: "Meena Patel",
-    location: "Tailor, Mumbai",
-    amount: 15000,
-    interest: 18,
-    repayment: "15 Dec 2023",
-    trustScore: 7.2,
-  },
-  {
-    id: 2,
-    borrower: "Sunita Devi",
-    location: "Food Stall, Delhi",
-    amount: 8000,
-    interest: 15,
-    repayment: "30 Nov 2023",
-    trustScore: 8.1,
-  },
-];
+import { loanRequestAPI } from "../services/api";
+import LoanOfferForm from "../components/LoanOfferForm";
 
 const initialActiveLoans = [
   {
@@ -51,40 +32,40 @@ const initialActiveLoans = [
 ];
 
 export default function LenderDashboard() {
-  const [loanOffers, setLoanOffers] = useState(initialLoanOffers);
+  const [loanRequests, setLoanRequests] = useState([]);
   const [pendingPayments, setPendingPayments] = useState([]);
   const [activeLoans, setActiveLoans] = useState(initialActiveLoans);
-  const [showAcceptModal, setShowAcceptModal] = useState(false);
-  const [selectedOffer, setSelectedOffer] = useState(null);
-  const [editedInterest, setEditedInterest] = useState("");
+  const [showLoanOfferForm, setShowLoanOfferForm] = useState(false);
   const [popup, setPopup] = useState({ show: false, message: "" });
+  const [loading, setLoading] = useState(false);
+  const [showRequestModal, setShowRequestModal] = useState(false);
+  const [requestDetails, setRequestDetails] = useState(null);
 
-  // Accept Offer Modal logic
-  const handleAcceptOffer = (offer) => {
-    setSelectedOffer(offer);
-    setEditedInterest(offer.interest);
-    setShowAcceptModal(true);
+  // Load data on component mount
+  useEffect(() => {
+    loadData();
+  }, []);
+
+  const loadData = async () => {
+    setLoading(true);
+    try {
+      // Load loan requests summary for lender dashboard
+      const requests = await loanRequestAPI.getLoanRequestsSummary();
+      setLoanRequests(requests);
+    } catch (error) {
+      console.error("Error loading data:", error);
+      setPopup({
+        show: true,
+        message: "Error loading data. Please try again.",
+      });
+    } finally {
+      setLoading(false);
+    }
   };
-  const handleConfirmAccept = () => {
-    setShowAcceptModal(false);
-    setPopup({
-      show: true,
-      message: "Offer accepted! Please make payment to proceed.",
-    });
-    // Move offer to pending payments after popup
-    setTimeout(() => {
-      setPopup({ show: false, message: "" });
-      setLoanOffers(loanOffers.filter((o) => o.id !== selectedOffer.id));
-      setPendingPayments([
-        ...pendingPayments,
-        {
-          ...selectedOffer,
-          interest: Number(editedInterest),
-          status: "Pending",
-        },
-      ]);
-      setSelectedOffer(null);
-    }, 1500);
+
+  const handleLoanOfferSuccess = () => {
+    setPopup({ show: true, message: "Loan offer created successfully!" });
+    loadData(); // Reload data
   };
   // Make Payment logic
   const handleMakePayment = (pay) => {
@@ -113,6 +94,32 @@ export default function LenderDashboard() {
     description: "",
   });
 
+  // Handler for View Request button
+  const handleViewRequest = async (requestId) => {
+    setLoading(true);
+    try {
+      // Fetch all details (assuming the API returns an array, find the right one)
+      const allDetails = await loanRequestAPI.getMyLoanRequests();
+      const details = allDetails.find((r) => r.id === requestId);
+      setRequestDetails(details);
+      setShowRequestModal(true);
+    } catch {
+      setPopup({ show: true, message: "Failed to load request details." });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Handler for Approve/Reject (just move to pending section in state)
+  const handleApprove = () => {
+    setShowRequestModal(false);
+    // Optionally update state to move to pending
+  };
+  const handleReject = () => {
+    setShowRequestModal(false);
+    // Optionally update state to move to pending
+  };
+
   return (
     <>
       {/* Navbar */}
@@ -120,7 +127,10 @@ export default function LenderDashboard() {
         <div className="navbar-title">Lender Dashboard</div>
         <button className="navbar-logout-btn">Logout</button>
       </nav>
-      <div className="lender-dashboard-root" style={{ minHeight: "100vh" }}>
+      <div
+        className="lender-dashboard-root"
+        style={{ background: "#f7f8fc", minHeight: "100vh" }}
+      >
         {/* Header */}
         <div className="dashboard-header-card">
           <div className="header-left">
@@ -166,59 +176,87 @@ export default function LenderDashboard() {
                   </tr>
                 </thead>
                 <tbody>
-                  {loanOffers.map((req) => (
-                    <tr key={req.id}>
-                      <td>
-                        <div
-                          style={{
-                            display: "flex",
-                            alignItems: "center",
-                            gap: 8,
-                          }}
-                        >
-                          {/* SVG Profile Icon */}
-                          <svg
-                            width="28"
-                            height="28"
-                            viewBox="0 0 24 24"
-                            fill="none"
-                            xmlns="http://www.w3.org/2000/svg"
-                            style={{ display: "inline-block" }}
-                          >
-                            <circle cx="12" cy="12" r="12" fill="#e3eaf6" />
-                            <circle cx="12" cy="10" r="4" fill="#b6c4d6" />
-                            <ellipse
-                              cx="12"
-                              cy="18"
-                              rx="6"
-                              ry="4"
-                              fill="#b6c4d6"
-                            />
-                          </svg>
-                          <div>
-                            <div style={{ fontWeight: 600, color: "#222" }}>
-                              {req.borrower}
-                            </div>
-                            <div style={{ fontSize: "0.95rem", color: "#555" }}>
-                              {req.location}
-                            </div>
-                          </div>
-                        </div>
-                      </td>
-                      <td>₹{req.amount.toLocaleString()}</td>
-                      <td>{req.interest}%</td>
-                      <td>{req.repayment}</td>
-                      <td>{req.trustScore}/10</td>
-                      <td>
-                        <button
-                          className="make-offer-btn"
-                          onClick={() => handleAcceptOffer(req)}
-                        >
-                          Accept Offer
-                        </button>
+                  {loading ? (
+                    <tr>
+                      <td
+                        colSpan={6}
+                        style={{ textAlign: "center", padding: "20px" }}
+                      >
+                        Loading loan requests...
                       </td>
                     </tr>
-                  ))}
+                  ) : loanRequests.length === 0 ? (
+                    <tr>
+                      <td
+                        colSpan={6}
+                        style={{
+                          textAlign: "center",
+                          padding: "20px",
+                          color: "#888",
+                        }}
+                      >
+                        No loan requests available.
+                      </td>
+                    </tr>
+                  ) : (
+                    loanRequests.map((req) => (
+                      <tr key={req.id}>
+                        <td>
+                          <div
+                            style={{
+                              display: "flex",
+                              alignItems: "center",
+                              gap: 8,
+                            }}
+                          >
+                            {/* SVG Profile Icon */}
+                            <svg
+                              width="28"
+                              height="28"
+                              viewBox="0 0 24 24"
+                              fill="none"
+                              xmlns="http://www.w3.org/2000/svg"
+                              style={{ display: "inline-block" }}
+                            >
+                              <circle cx="12" cy="12" r="12" fill="#e3eaf6" />
+                              <circle cx="12" cy="10" r="4" fill="#b6c4d6" />
+                              <ellipse
+                                cx="12"
+                                cy="18"
+                                rx="6"
+                                ry="4"
+                                fill="#b6c4d6"
+                              />
+                            </svg>
+                            <div>
+                              <div style={{ fontWeight: 600, color: "#222" }}>
+                                {req.borrowerName || "Anonymous"}
+                              </div>
+                              <div
+                                style={{ fontSize: "0.95rem", color: "#555" }}
+                              >
+                                {req.purpose || "Not specified"}
+                              </div>
+                            </div>
+                          </div>
+                        </td>
+                        <td>₹{req.amount?.toLocaleString()}</td>
+                        <td>{req.maxInterestRate}%</td>
+                        <td>
+                          {new Date(req.repaymentDate).toLocaleDateString()}
+                        </td>
+                        <td>8.5/10</td>
+                        <td>
+                          <button
+                            className="make-offer-btn"
+                            onClick={() => handleViewRequest(req.id)}
+                          >
+                            View Request
+                          </button>
+                        </td>
+                      </tr>
+                    ))
+                  )}
                 </tbody>
               </table>
             </div>
@@ -392,64 +430,60 @@ export default function LenderDashboard() {
             <button className="post-loan-btn">Post Loan Offer</button>
           </div>
         </div>
-        {/* Accept Offer Modal */}
-        {showAcceptModal && selectedOffer && (
-          <div className="modal-overlay">
-            <div className="modal-card">
-              <div className="modal-title">Accept Loan Offer</div>
-              <div className="modal-content">
-                <div>
-                  <b>Borrower:</b> {selectedOffer.borrower}
-                </div>
-                <div>
-                  <b>Location:</b> {selectedOffer.location}
-                </div>
-                <div>
-                  <b>Amount:</b> ₹{selectedOffer.amount.toLocaleString()}
-                </div>
-                <div style={{ margin: "10px 0" }}>
-                  <b>Interest Rate (%):</b>{" "}
-                  <input
-                    type="number"
-                    value={editedInterest}
-                    onChange={(e) => setEditedInterest(e.target.value)}
-                    style={{
-                      width: 60,
-                      marginLeft: 8,
-                      borderRadius: 6,
-                      border: "1px solid #ccc",
-                      padding: "2px 6px",
-                    }}
-                  />
-                </div>
-                <div>
-                  <b>Repayment:</b> {selectedOffer.repayment}
-                </div>
-                <div>
-                  <b>Trust Score:</b> {selectedOffer.trustScore}/10
-                </div>
-              </div>
-              <div className="modal-actions">
-                <button
-                  className="make-offer-btn"
-                  onClick={handleConfirmAccept}
-                >
-                  Confirm Accept
-                </button>
-                <button
-                  className="view-contract-btn"
-                  onClick={() => setShowAcceptModal(false)}
-                >
-                  Cancel
-                </button>
-              </div>
-            </div>
-          </div>
+
+        {/* Loan Offer Form Modal */}
+        {showLoanOfferForm && requestDetails && (
+          <LoanOfferForm
+            loanRequest={requestDetails}
+            onClose={() => setShowLoanOfferForm(false)}
+            onSuccess={handleLoanOfferSuccess}
+          />
         )}
+
         {/* Popup */}
         {popup.show && (
           <div className="popup-overlay">
             <div className="popup-card">{popup.message}</div>
+          </div>
+        )}
+
+        {/* Request Details Modal */}
+        {showRequestModal && requestDetails && (
+          <div className="modal-overlay">
+            <div className="modal-card">
+              <div className="modal-title">Loan Request Details</div>
+              <div className="modal-content">
+                <div>
+                  <b>Borrower:</b> {requestDetails.borrowerName || "N/A"}
+                </div>
+                <div>
+                  <b>Amount:</b> ₹{requestDetails.amount?.toLocaleString()}
+                </div>
+                <div>
+                  <b>Interest:</b> {requestDetails.maxInterestRate}%
+                </div>
+                <div>
+                  <b>Repayment:</b> {requestDetails.repaymentDate}
+                </div>
+                <div>
+                  <b>Description:</b> {requestDetails.description}
+                </div>
+              </div>
+              <div className="modal-actions">
+                <button className="approve-btn" onClick={handleApprove}>
+                  Approve
+                </button>
+                <button className="reject-btn" onClick={handleReject}>
+                  Reject
+                </button>
+                <button
+                  className="close-btn"
+                  onClick={() => setShowRequestModal(false)}
+                >
+                  Close
+                </button>
+              </div>
+            </div>
           </div>
         )}
       </div>
