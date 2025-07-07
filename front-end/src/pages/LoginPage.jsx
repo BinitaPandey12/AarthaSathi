@@ -8,7 +8,7 @@ const LoginPage = () => {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [successMessage, setSuccessMessage] = useState("");
-  const [showPassword] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -67,13 +67,13 @@ const LoginPage = () => {
       setLoading(false);
     }
   };
-  //   // need to remove this at last
-  //   navigate("/lender-dashboard");
+  // // need to remove this at last
+  // navigate("/lender-dashboard");
 
-  //   const togglePasswordVisibility = () => {
-  //     setShowPassword(!showPassword);
-  //   };
-  // // till here
+  const togglePasswordVisibility = () => {
+    setShowPassword(!showPassword);
+  };
+  // till here
   return (
     <div className="login-container">
       {successMessage && (
