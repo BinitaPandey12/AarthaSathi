@@ -1,7 +1,8 @@
-
 package com.arthasathi.arthasathi.services;
 
 import com.arthasathi.arthasathi.DTO.LoanOfferDTO;
+import com.arthasathi.arthasathi.DTO.LoanOfferSummaryDTO;
+import com.arthasathi.arthasathi.DTO.LoanOfferAvailableDTO;
 import com.arthasathi.arthasathi.entities.LoanOffer;
 import com.arthasathi.arthasathi.entities.LoanOfferStatus;
 import com.arthasathi.arthasathi.entities.User;
@@ -137,6 +138,36 @@ public class LoanOfferService {
         return offers.stream()
                 .map(this::convertToDTO)
                 .collect(Collectors.toList());
+    }
+
+    // Get all available loan offer summaries for borrowers
+    public List<LoanOfferSummaryDTO> getAllLoanOfferSummaries() {
+        List<LoanOffer> offers = loanOfferRepository.findByStatusOrderByCreatedAtDesc(com.arthasathi.arthasathi.entities.LoanOfferStatus.AVAILABLE);
+        return offers.stream().map(offer -> {
+            LoanOfferSummaryDTO dto = new LoanOfferSummaryDTO();
+            dto.setAmount(offer.getAmount());
+            dto.setInterestRate(offer.getInterestRate());
+            dto.setRepaymentDate(offer.getRepaymentDate());
+            dto.setTrustScore(5); // Default
+            return dto;
+        }).collect(java.util.stream.Collectors.toList());
+    }
+
+    // Get all available loan offers for borrowers with only required fields
+    public List<LoanOfferAvailableDTO> getAllAvailableLoanOffersForBorrower() {
+        java.time.format.DateTimeFormatter formatter = java.time.format.DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+        List<LoanOffer> offers = loanOfferRepository.findByStatusOrderByCreatedAtDesc(com.arthasathi.arthasathi.entities.LoanOfferStatus.AVAILABLE);
+        return offers.stream().map(offer -> {
+            LoanOfferAvailableDTO dto = new LoanOfferAvailableDTO();
+            dto.setAmount(offer.getAmount());
+            dto.setInterestRate(offer.getInterestRate());
+            dto.setRepaymentDate(offer.getRepaymentDate());
+            dto.setDescription(offer.getDescription());
+            dto.setLenderName(offer.getLender().getName());
+            dto.setLenderEmail(offer.getLender().getEmail());
+            dto.setCreatedAt(offer.getCreatedAt().format(formatter));
+            return dto;
+        }).collect(java.util.stream.Collectors.toList());
     }
 
     // Convert entity to DTO

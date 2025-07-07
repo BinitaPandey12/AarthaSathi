@@ -45,7 +45,8 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/api/auth/**").permitAll() //for public access without any authentication.
                         .requestMatchers("/api/test/**").permitAll() // Test endpoints
-                        .requestMatchers("/api/loan-requests/**").permitAll() // Temporary for testing
+                        .requestMatchers("/api/loan-requests/**").permitAll()
+                        // Temporary for testing
                         .requestMatchers("/api/loan-offers/**").permitAll() // Temporary for testing
                         .requestMatchers("/api/dashboard/**").permitAll() // Temporary for testing
                         .requestMatchers("/api/admin/**").hasAuthority("ADMIN")  //users with role=ADMIN can access it
@@ -63,7 +64,7 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOriginPatterns(Arrays.asList("http://localhost:5173"));
+        configuration.setAllowedOriginPatterns(Arrays.asList("http://localhost:5176"));
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         configuration.setAllowedHeaders(Arrays.asList("*"));
         configuration.setAllowCredentials(true);

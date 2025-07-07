@@ -1,6 +1,8 @@
 package com.arthasathi.arthasathi.controller;
 
 import com.arthasathi.arthasathi.DTO.LoanOfferDTO;
+import com.arthasathi.arthasathi.DTO.LoanOfferSummaryDTO;
+import com.arthasathi.arthasathi.DTO.LoanOfferAvailableDTO;
 import com.arthasathi.arthasathi.entities.LoanOfferStatus;
 import com.arthasathi.arthasathi.services.LoanOfferService;
 import jakarta.validation.Valid;
@@ -15,7 +17,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/loan-offers")
-//@CrossOrigin(origins = "*")
+@CrossOrigin(origins = "*")
 public class LoanOfferController {
 
     @Autowired
@@ -29,10 +31,17 @@ public class LoanOfferController {
         return ResponseEntity.ok(createdOffer);
     }
 
-    // Get all available loan offers (for borrowers dashboard)
+    // Get all available loan offers for borrowers (custom fields)
     @GetMapping("/available")
-    public ResponseEntity<List<LoanOfferDTO>> getAllAvailableLoanOffers() {
-        List<LoanOfferDTO> offers = loanOfferService.getAllAvailableLoanOffers();
+    public ResponseEntity<List<LoanOfferAvailableDTO>> getAllAvailableLoanOffers() {
+        List<LoanOfferAvailableDTO> offers = loanOfferService.getAllAvailableLoanOffersForBorrower();
+        return ResponseEntity.ok(offers);
+    }
+
+    // Get all available loan offer summaries for borrowers
+    @GetMapping("/available-summary")
+    public ResponseEntity<List<LoanOfferSummaryDTO>> getAllLoanOfferSummaries() {
+        List<LoanOfferSummaryDTO> offers = loanOfferService.getAllLoanOfferSummaries();
         return ResponseEntity.ok(offers);
     }
 
