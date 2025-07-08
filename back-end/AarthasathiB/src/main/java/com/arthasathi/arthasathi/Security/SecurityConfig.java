@@ -4,6 +4,7 @@ import com.arthasathi.arthasathi.CustomAccessDeniedHandler;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -46,9 +47,14 @@ public class SecurityConfig {
                         .requestMatchers("/api/auth/**").permitAll() //for public access without any authentication.
                         .requestMatchers("/api/test/**").permitAll() // Test endpoints
                         .requestMatchers("/api/loan-requests/**").permitAll()
-                        // Temporary for testing
-                        .requestMatchers("/api/loan-offers/**").permitAll() // Temporary for testing
-                        .requestMatchers("/api/dashboard/**").permitAll() // Temporary for testing
+                        .requestMatchers("/api/auth/login", "/api/auth/signup").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/loan-offers").hasAuthority("LENDER")
+                                .requestMatchers(HttpMethod.POST, "/api/loan-offers/awaiting-payment").hasAnyAuthority("LENDER","BORROWER")
+
+
+//                        .requestMatchers("/api/loan-offers/**").authenticated()// Temporary for testing
+                                .requestMatchers("/api/loan-requests/**").permitAll()
+                                .requestMatchers("/api/dashboard/**").permitAll() // Temporary for testing
                         .requestMatchers("/api/admin/**").hasAuthority("ADMIN")  //users with role=ADMIN can access it
                         .anyRequest().authenticated()
 
@@ -64,7 +70,7 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOriginPatterns(Arrays.asList("http://localhost:5176"));
+        configuration.setAllowedOriginPatterns(Arrays.asList("http://localhost:5181"));
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         configuration.setAllowedHeaders(Arrays.asList("*"));
         configuration.setAllowCredentials(true);

@@ -45,4 +45,6 @@ public interface LoanOfferRepository extends JpaRepository<LoanOffer, Long> {
     List<LoanOffer> findByInterestRateBetweenAndStatus(@Param("minRate") java.math.BigDecimal minRate,
                                                        @Param("maxRate") java.math.BigDecimal maxRate,
                                                        @Param("status") LoanOfferStatus status);
+
+    List<LoanOffer> findByLenderAndStatusOrderByCreatedAtDesc(User lender, LoanOfferStatus status);
 }

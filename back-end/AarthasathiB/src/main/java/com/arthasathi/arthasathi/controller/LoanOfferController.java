@@ -3,6 +3,7 @@ package com.arthasathi.arthasathi.controller;
 import com.arthasathi.arthasathi.DTO.LoanOfferDTO;
 import com.arthasathi.arthasathi.DTO.LoanOfferSummaryDTO;
 import com.arthasathi.arthasathi.DTO.LoanOfferAvailableDTO;
+import com.arthasathi.arthasathi.DTO.LoanOfferPendingDTO;
 import com.arthasathi.arthasathi.entities.LoanOfferStatus;
 import com.arthasathi.arthasathi.services.LoanOfferService;
 import jakarta.validation.Valid;
@@ -52,6 +53,12 @@ public class LoanOfferController {
         List<LoanOfferDTO> offers = loanOfferService.getLoanOffersByLender(userEmail);
         return ResponseEntity.ok(offers);
     }
+    // Accept a loan offer (borrower accepts offer)
+    @PutMapping("/{id}/accept")
+    public ResponseEntity<?> acceptLoanOffer(@PathVariable Long id) {
+        loanOfferService.acceptLoanOffer(id);
+        return ResponseEntity.ok().build();
+    }
 
     // Get loan offer by ID
     @GetMapping("/{id}")
@@ -85,6 +92,13 @@ public class LoanOfferController {
         List<LoanOfferDTO> offers = loanOfferService.getLoanOffersByAmountRange(minAmount, maxAmount);
         return ResponseEntity.ok(offers);
     }
+    // Get all accepted (awaiting payment) loan offers for the current lender
+    @GetMapping("/awaiting-payment")
+    public ResponseEntity<List<LoanOfferPendingDTO>> getAwaitingPaymentOffersByLender() {
+        String lenderEmail = getCurrentUserEmail();
+        List<LoanOfferPendingDTO> offers = loanOfferService.getAwaitingPaymentOffersByLender(lenderEmail);
+        return ResponseEntity.ok(offers);
+    }
 
     // Filter loan offers by interest rate (max rate)
     @GetMapping("/filter/interest-rate")
@@ -100,6 +114,14 @@ public class LoanOfferController {
             @RequestParam BigDecimal minRate,
             @RequestParam BigDecimal maxRate) {
         List<LoanOfferDTO> offers = loanOfferService.getLoanOffersByInterestRateRange(minRate, maxRate);
+        return ResponseEntity.ok(offers);
+    }
+
+    // Get all pending loan offers for the current lender
+    @GetMapping("/pending")
+    public ResponseEntity<List<LoanOfferPendingDTO>> getPendingLoanOffersByLender() {
+        String lenderEmail = getCurrentUserEmail();
+        List<LoanOfferPendingDTO> offers = loanOfferService.getPendingLoanOffersByLender(lenderEmail);
         return ResponseEntity.ok(offers);
     }
 
