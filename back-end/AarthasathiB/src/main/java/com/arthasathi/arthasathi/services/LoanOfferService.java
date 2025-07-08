@@ -1,9 +1,6 @@
 package com.arthasathi.arthasathi.services;
 
-import com.arthasathi.arthasathi.DTO.LoanOfferDTO;
-import com.arthasathi.arthasathi.DTO.LoanOfferSummaryDTO;
-import com.arthasathi.arthasathi.DTO.LoanOfferAvailableDTO;
-import com.arthasathi.arthasathi.DTO.LoanOfferPendingDTO;
+import com.arthasathi.arthasathi.DTO.*;
 import com.arthasathi.arthasathi.entities.LoanOffer;
 import com.arthasathi.arthasathi.entities.LoanOfferStatus;
 import com.arthasathi.arthasathi.entities.User;
@@ -47,7 +44,7 @@ public class LoanOfferService {
         loanOffer.setInterestRate(loanOfferDTO.getInterestRate());
         loanOffer.setRepaymentDate(loanOfferDTO.getRepaymentDate());
         loanOffer.setDescription(loanOfferDTO.getDescription());
-        loanOffer.setStatus(LoanOfferStatus.AVAILABLE);
+        loanOffer.setStatus(LoanOfferStatus.PENDING);
 
         LoanOffer savedOffer = loanOfferRepository.save(loanOffer);
         return convertToDTO(savedOffer);
@@ -143,7 +140,7 @@ public class LoanOfferService {
 
     // Get all available loan offer summaries for borrowers
     public List<LoanOfferSummaryDTO> getAllLoanOfferSummaries() {
-        List<LoanOffer> offers = loanOfferRepository.findByStatusOrderByCreatedAtDesc(com.arthasathi.arthasathi.entities.LoanOfferStatus.AVAILABLE);
+        List<LoanOffer> offers = loanOfferRepository.findByStatusOrderByCreatedAtDesc(LoanOfferStatus.PENDING);
         return offers.stream().map(offer -> {
             LoanOfferSummaryDTO dto = new LoanOfferSummaryDTO();
             dto.setId(offer.getId());
@@ -189,20 +186,51 @@ public class LoanOfferService {
         }).collect(java.util.stream.Collectors.toList());
     }
     // Accept a loan offer (borrower accepts offer)
-    public void acceptLoanOffer(Long id) {
+//    public void acceptLoanOffer(Long id) {
+//        LoanOffer offer = loanOfferRepository.findById(id)
+//                .orElseThrow(() -> new RuntimeException("Loan offer not found"));
+//        offer.setStatus(com.arthasathi.arthasathi.entities.LoanOfferStatus.ACCEPTED);
+//        loanOfferRepository.save(offer);
+//    }
+    // Accept a loan offer (borrower accepts offer)
+    public void acceptLoanOffer(Long id, String borrowerEmail) {
         LoanOffer offer = loanOfferRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Loan offer not found"));
+        com.arthasathi.arthasathi.entities.User borrower = userRepository.findByEmail(borrowerEmail)
+                .orElseThrow(() -> new RuntimeException("Borrower not found"));
         offer.setStatus(com.arthasathi.arthasathi.entities.LoanOfferStatus.ACCEPTED);
+        offer.setAcceptedBy(borrower);
         loanOfferRepository.save(offer);
     }
-    // Get all accepted (awaiting payment) loan offers for the current lender
-    public List<LoanOfferPendingDTO> getAwaitingPaymentOffersByLender(String lenderEmail) {
+    // Get all accepted (awaiting payment) loan offers for the current lender (with borrower info)
+    public List<LoanOfferAwaitingPaymentLenderDTO> getAwaitingPaymentOffersByLender(String lenderEmail) {
         java.time.format.DateTimeFormatter formatter = java.time.format.DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
         com.arthasathi.arthasathi.entities.User lender = userRepository.findByEmail(lenderEmail)
                 .orElseThrow(() -> new RuntimeException("Lender not found"));
         List<LoanOffer> offers = loanOfferRepository.findByLenderAndStatusOrderByCreatedAtDesc(lender, com.arthasathi.arthasathi.entities.LoanOfferStatus.ACCEPTED);
         return offers.stream().map(offer -> {
-            LoanOfferPendingDTO dto = new LoanOfferPendingDTO();
+            LoanOfferAwaitingPaymentLenderDTO dto = new LoanOfferAwaitingPaymentLenderDTO();
+            dto.setAmount(offer.getAmount());
+            dto.setInterestRate(offer.getInterestRate());
+            dto.setRepaymentDate(offer.getRepaymentDate());
+            dto.setDescription(offer.getDescription());
+            dto.setCreatedAt(offer.getCreatedAt().format(formatter));
+            if (offer.getAcceptedBy() != null) {
+                dto.setBorrowerName(offer.getAcceptedBy().getName());
+                dto.setBorrowerEmail(offer.getAcceptedBy().getEmail());
+            }
+            return dto;
+        }).collect(java.util.stream.Collectors.toList());
+    }
+
+    // Get all accepted (awaiting payment) loan offers for the current borrower
+    public List<LoanOfferAwaitingPaymentBorrowerDTO> getAwaitingPaymentOffersByBorrower(String borrowerEmail) {
+        java.time.format.DateTimeFormatter formatter = java.time.format.DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+        com.arthasathi.arthasathi.entities.User borrower = userRepository.findByEmail(borrowerEmail)
+                .orElseThrow(() -> new RuntimeException("Borrower not found"));
+        List<LoanOffer> offers = loanOfferRepository.findByAcceptedByAndStatusOrderByCreatedAtDesc(borrower, com.arthasathi.arthasathi.entities.LoanOfferStatus.ACCEPTED);
+        return offers.stream().map(offer -> {
+            LoanOfferAwaitingPaymentBorrowerDTO dto = new LoanOfferAwaitingPaymentBorrowerDTO();
             dto.setAmount(offer.getAmount());
             dto.setInterestRate(offer.getInterestRate());
             dto.setRepaymentDate(offer.getRepaymentDate());
@@ -211,6 +239,22 @@ public class LoanOfferService {
             return dto;
         }).collect(java.util.stream.Collectors.toList());
     }
+//    // Get all accepted (awaiting payment) loan offers for the current lender
+//    public List<LoanOfferPendingDTO> getAwaitingPaymentOffersByLender(String lenderEmail) {
+//        java.time.format.DateTimeFormatter formatter = java.time.format.DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+//        com.arthasathi.arthasathi.entities.User lender = userRepository.findByEmail(lenderEmail)
+//                .orElseThrow(() -> new RuntimeException("Lender not found"));
+//        List<LoanOffer> offers = loanOfferRepository.findByLenderAndStatusOrderByCreatedAtDesc(lender, com.arthasathi.arthasathi.entities.LoanOfferStatus.ACCEPTED);
+//        return offers.stream().map(offer -> {
+//            LoanOfferPendingDTO dto = new LoanOfferPendingDTO();
+//            dto.setAmount(offer.getAmount());
+//            dto.setInterestRate(offer.getInterestRate());
+//            dto.setRepaymentDate(offer.getRepaymentDate());
+//            dto.setDescription(offer.getDescription());
+//            dto.setCreatedAt(offer.getCreatedAt().format(formatter));
+//            return dto;
+//        }).collect(java.util.stream.Collectors.toList());
+//    }
 
     // Convert entity to DTO
     private LoanOfferDTO convertToDTO(LoanOffer loanOffer) {

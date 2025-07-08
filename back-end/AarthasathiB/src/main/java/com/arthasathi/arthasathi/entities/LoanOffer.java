@@ -17,6 +17,10 @@ public class LoanOffer {
     @JoinColumn(name = "lender_id", nullable = false)
     private User lender;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "accepted_by_id")
+    private User acceptedBy;
+
     @NotNull
     @Column(nullable = false)
     private BigDecimal amount;
@@ -74,6 +78,9 @@ public class LoanOffer {
     public void setLender(User lender) {
         this.lender = lender;
     }
+
+    public User getAcceptedBy() { return acceptedBy; }
+    public void setAcceptedBy(User acceptedBy) { this.acceptedBy = acceptedBy; }
 
     public BigDecimal getAmount() {
         return amount;

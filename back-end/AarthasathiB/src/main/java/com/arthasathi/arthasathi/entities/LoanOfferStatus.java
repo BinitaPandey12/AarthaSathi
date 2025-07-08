@@ -4,5 +4,6 @@ public enum LoanOfferStatus {
     AVAILABLE,
     ACCEPTED,
     EXPIRED,
-    CANCELLED
+    CANCELLED,
+    PENDING
 }

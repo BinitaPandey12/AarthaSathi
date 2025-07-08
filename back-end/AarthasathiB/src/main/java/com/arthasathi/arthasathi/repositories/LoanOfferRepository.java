@@ -47,4 +47,6 @@ public interface LoanOfferRepository extends JpaRepository<LoanOffer, Long> {
                                                        @Param("status") LoanOfferStatus status);
 
     List<LoanOffer> findByLenderAndStatusOrderByCreatedAtDesc(User lender, LoanOfferStatus status);
+
+    List<LoanOffer> findByAcceptedByAndStatusOrderByCreatedAtDesc(User acceptedBy, LoanOfferStatus status);
 }

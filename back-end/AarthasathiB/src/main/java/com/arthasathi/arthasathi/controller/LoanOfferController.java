@@ -1,9 +1,6 @@
 package com.arthasathi.arthasathi.controller;
 
-import com.arthasathi.arthasathi.DTO.LoanOfferDTO;
-import com.arthasathi.arthasathi.DTO.LoanOfferSummaryDTO;
-import com.arthasathi.arthasathi.DTO.LoanOfferAvailableDTO;
-import com.arthasathi.arthasathi.DTO.LoanOfferPendingDTO;
+import com.arthasathi.arthasathi.DTO.*;
 import com.arthasathi.arthasathi.entities.LoanOfferStatus;
 import com.arthasathi.arthasathi.services.LoanOfferService;
 import jakarta.validation.Valid;
@@ -54,9 +51,15 @@ public class LoanOfferController {
         return ResponseEntity.ok(offers);
     }
     // Accept a loan offer (borrower accepts offer)
+//    @PutMapping("/{id}/accept")
+//    public ResponseEntity<?> acceptLoanOffer(@PathVariable Long id) {
+//        loanOfferService.acceptLoanOffer(id,borrowerEmail);
+//        return ResponseEntity.ok().build();
+//    }
     @PutMapping("/{id}/accept")
     public ResponseEntity<?> acceptLoanOffer(@PathVariable Long id) {
-        loanOfferService.acceptLoanOffer(id);
+        String borrowerEmail = getCurrentUserEmail();
+        loanOfferService.acceptLoanOffer(id, borrowerEmail);
         return ResponseEntity.ok().build();
     }
 
@@ -83,6 +86,21 @@ public class LoanOfferController {
         LoanOfferDTO cancelledOffer = loanOfferService.cancelLoanOffer(id, userEmail);
         return ResponseEntity.ok(cancelledOffer);
     }
+    // Get all accepted (awaiting payment) loan offers for the current lender (with borrower info)
+    @GetMapping("/awaiting-payment")
+    public ResponseEntity<List<LoanOfferAwaitingPaymentLenderDTO>> getAwaitingPaymentOffersByLender() {
+        String lenderEmail = getCurrentUserEmail();
+        List<LoanOfferAwaitingPaymentLenderDTO> offers = loanOfferService.getAwaitingPaymentOffersByLender(lenderEmail);
+        return ResponseEntity.ok(offers);
+    }
+
+    // Get all accepted (awaiting payment) loan offers for the current borrower
+    @GetMapping("/awaiting-payment/borrower")
+    public ResponseEntity<List<LoanOfferAwaitingPaymentBorrowerDTO>> getAwaitingPaymentOffersByBorrower() {
+        String borrowerEmail = getCurrentUserEmail();
+        List<LoanOfferAwaitingPaymentBorrowerDTO> offers = loanOfferService.getAwaitingPaymentOffersByBorrower(borrowerEmail);
+        return ResponseEntity.ok(offers);
+    }
 
     // Filter loan offers by amount range
     @GetMapping("/filter/amount")
@@ -93,12 +111,12 @@ public class LoanOfferController {
         return ResponseEntity.ok(offers);
     }
     // Get all accepted (awaiting payment) loan offers for the current lender
-    @GetMapping("/awaiting-payment")
-    public ResponseEntity<List<LoanOfferPendingDTO>> getAwaitingPaymentOffersByLender() {
-        String lenderEmail = getCurrentUserEmail();
-        List<LoanOfferPendingDTO> offers = loanOfferService.getAwaitingPaymentOffersByLender(lenderEmail);
-        return ResponseEntity.ok(offers);
-    }
+//    @GetMapping("/awaiting-payment")
+//    public ResponseEntity<List<LoanOfferPendingDTO>> getAwaitingPaymentOffersByLender() {
+//        String lenderEmail = getCurrentUserEmail();
+//        List<LoanOfferPendingDTO> offers = loanOfferService.getAwaitingPaymentOffersByLender(lenderEmail);
+//        return ResponseEntity.ok(offers);
+//    }
 
     // Filter loan offers by interest rate (max rate)
     @GetMapping("/filter/interest-rate")
