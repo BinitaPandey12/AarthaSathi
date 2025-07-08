@@ -2,6 +2,11 @@ import React, { useState, useEffect } from "react";
 import logo from "../assets/logo.png";
 import "./BorrowerDashboard.css";
 import { useNavigate } from "react-router-dom";
+<<<<<<< HEAD
+=======
+
+
+>>>>>>> more update
 
 export default function BorrowerDashboard() {
   const navigate = useNavigate();
@@ -130,6 +135,7 @@ export default function BorrowerDashboard() {
       }
 
       const result = await response.json();
+<<<<<<< HEAD
       setPostedLoans([
         ...postedLoans,
         {
@@ -142,6 +148,17 @@ export default function BorrowerDashboard() {
           postedDate: new Date().toLocaleDateString("en-GB"),
         },
       ]);
+=======
+      setPostedLoans([...postedLoans, {
+      id: result.id,
+      amount: newLoanForm.amount,
+      maxInterestRate: newLoanForm.maxInterestRate,
+      repaymentDate: newLoanForm.repaymentDate,
+      description: newLoanForm.description,
+      status: "Waiting for Lender",
+      postedDate: new Date().toLocaleDateString("en-GB")
+    }]);
+>>>>>>> more update
 
       // Clear form
       setNewLoanForm({
@@ -170,6 +187,7 @@ export default function BorrowerDashboard() {
     setSelectedOffer(null);
   };
   // Accept Offer logic
+<<<<<<< HEAD
   const acceptOffer = async () => {
     try {
       const token = localStorage.getItem("token");
@@ -224,6 +242,50 @@ export default function BorrowerDashboard() {
       setTimeout(() => setPopup({ show: false }), 3000);
     }
   };
+=======
+const acceptOffer = async () => {
+  try {
+    const token = localStorage.getItem("token");
+    const response = await fetch(
+      `http://localhost:8080/api/loan-offers/${selectedOffer.id}/accept`,
+      {
+        method: "PUT",
+        headers: { Authorization: `Bearer ${token}` },
+      }
+    );
+
+    if (!response.ok) throw new Error("Offer acceptance failed!");
+
+    // Update all relevant states
+    setPostedLoans(postedLoans.filter(loan => 
+      loan.id !== selectedOffer.loanRequestId // Remove from posted loans
+    ));
+    
+    setLenderOffers(
+      lenderOffers.filter(offer => offer.id !== selectedOffer.id)
+    );
+    
+    setPendingLoans([
+      ...pendingLoans,
+      {
+        ...selectedOffer,
+        status: "Waiting for Lender Payment",
+        acceptedDate: new Date().toLocaleDateString("en-GB"),
+      },
+    ]);
+
+    setShowOffer(false);
+    setPopup({ show: true, message: "Offer accepted successfully!" });
+
+  } catch (err) {
+    setPopup({
+      show: true,
+      message: err.message || "Failed to accept offer",
+    });
+  }
+  setTimeout(() => setPopup({ show: false }), 3000);
+};
+>>>>>>> more update
   // Simulate lender payment for demo
   const handleLenderPayment = (loan) => {
     setPopup({
@@ -244,6 +306,10 @@ export default function BorrowerDashboard() {
     }, 1500);
   };
 
+<<<<<<< HEAD
+=======
+ 
+>>>>>>> more update
   // Update your form input to use maxInterestRate
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -393,6 +459,7 @@ export default function BorrowerDashboard() {
         </section>
 
         {/* Posted Loan Requests */}
+<<<<<<< HEAD
         <section className="borrower-section posted-section">
           <div className="section-title">Posted Loan Requests</div>
           <div className="section-desc">
@@ -428,6 +495,39 @@ export default function BorrowerDashboard() {
             )}
           </div>
         </section>
+=======
+<section className="borrower-section posted-section">
+  <div className="section-title">Posted Loan Requests</div>
+  <div className="section-desc">
+    Loans you've requested, waiting for lender acceptance.
+  </div>
+  <div className="posted-loans-grid">
+    {postedLoans.length === 0 ? (
+      <div className="posted-empty">No posted loan requests</div>
+    ) : (
+      postedLoans.map((loan) => (
+        <div className="posted-loan-card" key={loan.id}>
+          <div className="loan-header">
+            <div className="loan-amount">₹{loan.amount}</div>
+            <span className="loan-status posted">Posted</span>
+          </div>
+          <div className="loan-details">
+            <div>Max Interest: <b>{loan.maxInterestRate}%</b></div>
+            <div>Repayment: <b>{loan.repaymentDate}</b></div>
+            {loan.description && (
+              <div className="loan-desc">{loan.description}</div>
+            )}
+          </div>
+          <div className="loan-info">
+            <div>Posted: {loan.postedDate}</div>
+            <div>Status: {loan.status}</div>
+          </div>
+        </div>
+      ))
+    )}
+  </div>
+</section>
+>>>>>>> more update
 
         {/* Pending Loans */}
         <section className="borrower-section pending-section smart-pending-section">
