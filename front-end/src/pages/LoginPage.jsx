@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
-import "./LoginPage.css"; // Create this CSS file
+import "./LoginPage.css";
 
 const LoginPage = () => {
   const [email, setEmail] = useState("");
@@ -9,33 +9,32 @@ const LoginPage = () => {
   const [loading, setLoading] = useState(false);
   const [successMessage, setSuccessMessage] = useState("");
   const [showPassword, setShowPassword] = useState(false);
+
   const navigate = useNavigate();
   const location = useLocation();
 
   useEffect(() => {
-    // Check if there's a success message from signup
     if (location.state?.message) {
       setSuccessMessage(location.state.message);
-      // Clear the state to prevent showing message again on refresh
       navigate(location.pathname, { replace: true });
     }
   }, [location, navigate]);
+
+  const togglePasswordVisibility = () => {
+    setShowPassword((prev) => !prev);
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
     setLoading(true);
+
     try {
-      const loginData = {
-        email: email,
-        password: password,
-      };
+      const loginData = { email, password };
 
       const response = await fetch("http://localhost:8080/api/auth/login", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify(loginData),
       });
 
@@ -46,17 +45,30 @@ const LoginPage = () => {
         return;
       }
 
-      // Get user type from response
       const userData = await response.json();
-      const userType = userData.userType || userData.role || "user";
 
-      // Redirect based on user type
-      if (userType === "lender" || userType === "LENDER") {
+      if (!userData.token) {
+        setError("Login failed: No token received.");
+        setLoading(false);
+        return;
+      }
+
+      // Store token
+      localStorage.setItem("token", userData.token);
+
+
+      // Store user info excluding token
+const { token, ...userWithoutToken } = userData;
+localStorage.setItem("user", JSON.stringify(userWithoutToken));
+
+      // Determine user role (case-insensitive)
+      const role = (userData.role || "").toLowerCase();
+
+      if (role === "lender") {
         navigate("/lender-dashboard");
-      } else if (userType === "borrower" || userType === "BORROWER") {
+      } else if (role === "borrower") {
         navigate("/borrower-dashboard");
       } else {
-        // Default fallback
         navigate("/");
       }
     } catch (err) {
@@ -64,16 +76,11 @@ const LoginPage = () => {
       setError(
         "Network error. Please check if the backend server is running on http://localhost:8080"
       );
+    } finally {
       setLoading(false);
     }
   };
-  // // need to remove this at last
-  // navigate("/lender-dashboard");
 
-  const togglePasswordVisibility = () => {
-    setShowPassword(!showPassword);
-  };
-  // till here
   return (
     <div className="login-container">
       {successMessage && (
@@ -95,30 +102,34 @@ const LoginPage = () => {
         <h2>Login to AarthaSathi</h2>
         <form onSubmit={handleSubmit}>
           <div className="form-group">
-            <label>Email</label>
+            <label htmlFor="email-input">Email</label>
             <input
+              id="email-input"
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               placeholder="Enter your email"
               required
+              autoComplete="username"
             />
           </div>
           <div className="form-group">
-            <label>Password</label>
+            <label htmlFor="password-input">Password</label>
             <div className="password-input-container">
               <input
+                id="password-input"
                 type={showPassword ? "text" : "password"}
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="Enter your password"
                 required
+                autoComplete="current-password"
               />
               <button
                 type="button"
                 className="password-toggle-btn"
-                // eslint-disable-next-line no-undef
                 onClick={togglePasswordVisibility}
+                aria-label={showPassword ? "Hide password" : "Show password"}
               >
                 {showPassword ? "👁️" : "👁️‍🗨️"}
               </button>
@@ -134,7 +145,8 @@ const LoginPage = () => {
           </button>
         </form>
       </div>
-      {/* Signup Options Box */}
+
+      {/* Signup Options */}
       <div className="signup-options">
         <h3>New to AarthaSathi?</h3>
         <p>Choose how you want to participate:</p>
