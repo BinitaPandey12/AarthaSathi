@@ -1,62 +1,20 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import logo from "../assets/logo.png";
 import "./BorrowerDashboard.css";
-
-const initialLenderOffers = [
-  {
-    id: 1,
-    lender: "Meena Patel",
-    avatar: "https://randomuser.me/api/portraits/women/44.jpg",
-    location: "Tailor, Mumbai",
-    amount: 15000,
-    interest: 18,
-    repayment: "15 Dec 2023",
-    trustScore: 7.2,
-  },
-  {
-    id: 2,
-    lender: "Sunita Devi",
-    avatar: "https://randomuser.me/api/portraits/women/45.jpg",
-    location: "Food Stall, Delhi",
-    amount: 8000,
-    interest: 15,
-    repayment: "30 Nov 2023",
-    trustScore: 8.1,
-  },
-];
-
-const initialActiveLoans = [
-  {
-    id: 3,
-    lender: "Kavita Singh",
-    location: "Beauty Salon, Bangalore",
-    amount: 20000,
-    interest: 18,
-    repayment: "15 Feb 2024",
-    status: "Active Loan",
-    contract: true,
-    disbursedDate: "15 Nov 2023",
-  },
-  {
-    id: 4,
-    lender: "Sita Devi",
-    location: "Tailor, Mumbai",
-    amount: 10000,
-    interest: 15,
-    repayment: "10 Mar 2024",
-    status: "Active Loan",
-    contract: true,
-    disbursedDate: "20 Nov 2023",
-  },
-];
+import { useNavigate } from "react-router-dom";
 
 export default function BorrowerDashboard() {
-  const [lenderOffers, setLenderOffers] = useState(initialLenderOffers);
+  const navigate = useNavigate();
+  // Replace initialLenderOffers with empty array
+  const [lenderOffers, setLenderOffers] = useState([]);
   const [pendingLoans, setPendingLoans] = useState([]);
-  const [activeLoans, setActiveLoans] = useState(initialActiveLoans);
+  const [activeLoans, setActiveLoans] = useState([]);
   const [showOffer, setShowOffer] = useState(false);
   const [selectedOffer, setSelectedOffer] = useState(null);
   const [popup, setPopup] = useState({ show: false, message: "" });
+  const [postedLoans, setPostedLoans] = useState([]);
+  // Add loading state
+  const [isLoadingOffers, setIsLoadingOffers] = useState(false);
   const [newLoanForm, setNewLoanForm] = useState({
     amount: "",
     maxInterestRate: "",
@@ -64,10 +22,83 @@ export default function BorrowerDashboard() {
     description: "",
   });
 
-   const createLoanRequest = async () => {
+  // Fetch available loan offers from API
+  useEffect(() => {
+    const fetchLoanOffers = async () => {
+      setIsLoadingOffers(true);
+      try {
+        const token = localStorage.getItem("token");
+        const response = await fetch(
+          "http://localhost:8080/api/loan-offers/available-summary",
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+
+        if (!response.ok) throw new Error("Failed to fetch offers");
+
+        const offers = await response.json();
+        setLenderOffers(offers);
+      } catch (error) {
+        setPopup({ show: true, message: error.message });
+      } finally {
+        setIsLoadingOffers(false);
+      }
+    };
+
+    fetchLoanOffers();
+  }, []);
+
+  // Fetch detailed offer when clicked
+  const fetchOfferDetails = async (offerId) => {
+    try {
+      const token = localStorage.getItem("token");
+      const response = await fetch(
+        `http://localhost:8080/api/loan-offers/${offerId}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      if (!response.ok) throw new Error("Failed to fetch offer details");
+
+      const offerDetails = await response.json();
+      setSelectedOffer({
+        ...offerDetails,
+        lender: offerDetails.lenderName,
+        interest: offerDetails.interestRate,
+        repayment: offerDetails.repaymentDate,
+        trustScore: offerDetails.trustScore || 5,
+      });
+      setShowOffer(true);
+    } catch (error) {
+      setPopup({ show: true, message: error.message });
+    }
+  };
+
+  const userData = JSON.parse(localStorage.getItem("user"));
+  const userName = userData?.name || "User";
+
+  const handleLogout = () => {
+    // Clear user data from localStorage
+    localStorage.removeItem("token");
+    localStorage.removeItem("user");
+
+    // Redirect to landing page
+    navigate("/");
+  };
+  const createLoanRequest = async () => {
     try {
       // Validation
-      if (!newLoanForm.amount || !newLoanForm.maxInterestRate || !newLoanForm.repaymentDate) {
+      if (
+        !newLoanForm.amount ||
+        !newLoanForm.maxInterestRate ||
+        !newLoanForm.repaymentDate
+      ) {
         setPopup({ show: true, message: "Please fill all required fields" });
         return;
       }
@@ -81,16 +112,16 @@ export default function BorrowerDashboard() {
         amount: parseFloat(newLoanForm.amount),
         maxInterestRate: parseFloat(newLoanForm.maxInterestRate),
         repaymentDate: newLoanForm.repaymentDate,
-        description: newLoanForm.description
+        description: newLoanForm.description,
       };
 
       const response = await fetch("http://localhost:8080/api/loan-requests", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "Authorization": `Bearer ${token}`
+          Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify(loanRequestData)
+        body: JSON.stringify(loanRequestData),
       });
 
       if (!response.ok) {
@@ -99,53 +130,77 @@ export default function BorrowerDashboard() {
       }
 
       const result = await response.json();
-      setPopup({
-        show: true,
-        message: `Loan request created! ID: ${result.id}`
-      });
+      setPostedLoans([
+        ...postedLoans,
+        {
+          id: result.id,
+          amount: newLoanForm.amount,
+          maxInterestRate: newLoanForm.maxInterestRate,
+          repaymentDate: newLoanForm.repaymentDate,
+          description: newLoanForm.description,
+          status: "Waiting for Lender",
+          postedDate: new Date().toLocaleDateString("en-GB"),
+        },
+      ]);
 
       // Clear form
       setNewLoanForm({
         amount: "",
         maxInterestRate: "",
         repaymentDate: "",
-        description: ""
+        description: "",
       });
-
     } catch (error) {
       console.error("Error creating loan request:", error);
       setPopup({
         show: true,
         message: error.message.includes("session expired")
           ? "Session expired. Please login again."
-          : error.message || "Failed to create loan request"
+          : error.message || "Failed to create loan request",
       });
     }
 
     setTimeout(() => setPopup({ show: false, message: "" }), 3000);
   };
 
-  
-
   // View Offer Modal logic
-  const openOffer = (offer) => {
-    setSelectedOffer(offer);
-    setShowOffer(true);
-  };
+
   const closeOffer = () => {
     setShowOffer(false);
     setSelectedOffer(null);
   };
   // Accept Offer logic
-  const acceptOffer = () => {
-    setShowOffer(false);
-    setPopup({
-      show: true,
-      message: "Offer accepted! Waiting for lender payment.",
-    });
-    setTimeout(() => {
-      setPopup({ show: false, message: "" });
-      setLenderOffers(lenderOffers.filter((o) => o.id !== selectedOffer.id));
+  const acceptOffer = async () => {
+    try {
+      const token = localStorage.getItem("token");
+
+      // Show processing popup
+      setPopup({
+        show: true,
+        message: "Accepting the loan offer...",
+      });
+
+      const response = await fetch(
+        `http://localhost:8080/api/loan-offers/${selectedOffer.id}/accept`,
+        {
+          method: "PUT",
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+
+      if (!response.ok) throw new Error("Offer acceptance failed!");
+
+      // Update all states
+      setPostedLoans(
+        postedLoans.filter(
+          (loan) => loan.id !== selectedOffer.loanRequestId // Remove from posted loans
+        )
+      );
+
+      setLenderOffers(
+        lenderOffers.filter((offer) => offer.id !== selectedOffer.id)
+      );
+
       setPendingLoans([
         ...pendingLoans,
         {
@@ -154,8 +209,20 @@ export default function BorrowerDashboard() {
           acceptedDate: new Date().toLocaleDateString("en-GB"),
         },
       ]);
-      setSelectedOffer(null);
-    }, 1500);
+
+      setShowOffer(false);
+      setPopup({
+        show: true,
+        message: "✓ Offer accepted! Waiting for lender's payment.",
+      });
+    } catch (err) {
+      setPopup({
+        show: true,
+        message: "✗ " + (err.message || "Failed to accept offer"),
+      });
+    } finally {
+      setTimeout(() => setPopup({ show: false }), 3000);
+    }
   };
   // Simulate lender payment for demo
   const handleLenderPayment = (loan) => {
@@ -177,27 +244,12 @@ export default function BorrowerDashboard() {
     }, 1500);
   };
 
-  // const createLoanRequest = () => {
-  //   if (!newLoanForm.amount || !newLoanForm.maxInterest || !newLoanForm.repaymentDate) {
-  //     alert('Please fill all required fields');
-  //     return;
-  //   }
-  //   setShowOffer(true);
-  // };
-  // const confirmCreate = () => {
-  //   // Here you would typically make an API call
-  //   alert('Loan request created successfully!');
-  //   setShowOffer(false);
-  //   setNewLoanForm({ amount: '', maxInterest: '', repaymentDate: '', description: '' });
-  // };
-
-
-   // Update your form input to use maxInterestRate
+  // Update your form input to use maxInterestRate
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    setNewLoanForm(prev => ({
+    setNewLoanForm((prev) => ({
       ...prev,
-      [name]: value
+      [name]: value,
     }));
   };
 
@@ -206,14 +258,20 @@ export default function BorrowerDashboard() {
       {/* Navbar */}
       <nav className="borrower-navbar">
         <div className="navbar-title">Borrower Dashboard</div>
-        <button className="navbar-logout-btn">Logout</button>
+
+        <button className="navbar-logout-btn" onClick={handleLogout}>
+          Logout
+        </button>
       </nav>
       <div className="borrower-dashboard-root">
         {/* Header */}
         <header className="borrower-header">
           <img src={logo} alt="AarthaSathi Logo" className="borrower-logo" />
           <div className="borrower-welcome">
-            <div className="borrower-title">Welcome back, Meena Patel!</div>
+            <div className="borrower-title">
+              Welcome back, Welcome,{" "}
+              <span className="username">{userName}</span>
+            </div>
             <div className="borrower-desc">
               Here's your borrowing dashboard where you can request loans and
               manage your active loans.
@@ -252,60 +310,122 @@ export default function BorrowerDashboard() {
                 </tr>
               </thead>
               <tbody>
-                {lenderOffers.map((offer) => (
-                  <tr key={offer.id}>
-                    <td>
-                      <div
-                        className="lender-info"
-                        style={{
-                          display: "flex",
-                          alignItems: "center",
-                          gap: 8,
-                        }}
-                      >
-                        {/* SVG Profile Icon */}
-                        <svg
-                          width="28"
-                          height="28"
-                          viewBox="0 0 24 24"
-                          fill="none"
-                          xmlns="http://www.w3.org/2000/svg"
-                          style={{ display: "inline-block" }}
-                        >
-                          <circle cx="12" cy="12" r="12" fill="#e3eaf6" />
-                          <circle cx="12" cy="10" r="4" fill="#b6c4d6" />
-                          <ellipse
-                            cx="12"
-                            cy="18"
-                            rx="6"
-                            ry="4"
-                            fill="#b6c4d6"
-                          />
-                        </svg>
-                        <div>
-                          <div className="lender-name">{offer.lender}</div>
-                          <div className="lender-location">
-                            {offer.location}
-                          </div>
-                        </div>
-                      </div>
-                    </td>
-                    <td>₹{offer.amount.toLocaleString()}</td>
-                    <td>{offer.interest}%</td>
-                    <td>{offer.repayment}</td>
-                    <td>{offer.trustScore}/10</td>
-                    <td>
-                      <button
-                        className="view-offer-btn"
-                        onClick={() => openOffer(offer)}
-                      >
-                        View Offer
-                      </button>
+                {isLoadingOffers ? (
+                  <tr>
+                    <td
+                      colSpan={6}
+                      style={{
+                        height: "100px",
+                        textAlign: "center",
+                        verticalAlign: "middle",
+                        fontStyle: "italic",
+                        color: "#666",
+                      }}
+                    >
+                      Loading loan offers...
                     </td>
                   </tr>
-                ))}
+                ) : lenderOffers.length === 0 ? (
+                  <tr>
+                    <td
+                      colSpan={6}
+                      style={{
+                        height: "100px",
+                        textAlign: "center",
+                        verticalAlign: "middle",
+                        fontStyle: "italic",
+                        color: "#666",
+                      }}
+                    >
+                      No loan offers available at the moment
+                    </td>
+                  </tr>
+                ) : (
+                  lenderOffers.map((offer) => (
+                    <tr key={offer.id}>
+                      <td>
+                        <div className="lender-info">
+                          <img
+                            src={
+                              offer.lenderAvatar ||
+                              `https://ui-avatars.com/api/?name=${
+                                offer.lenderName?.charAt(0) || "L"
+                              }&background=random`
+                            }
+                            alt="Lender"
+                            style={{
+                              width: "28px",
+                              height: "28px",
+                              borderRadius: "50%",
+                              objectFit: "cover",
+                            }}
+                          />
+                          <div>
+                            <div style={{ fontWeight: 600 }}>
+                              {offer.lenderName || "Anonymous Lender"}
+                            </div>
+                            <div style={{ fontSize: "0.9rem", color: "#555" }}>
+                              {offer.lenderLocation || "Location not specified"}
+                            </div>
+                          </div>
+                        </div>
+                      </td>
+                      <td>₹{offer.amount.toLocaleString()}</td>
+                      <td>{offer.interestRate}%</td>
+                      <td>
+                        {new Date(offer.repaymentDate).toLocaleDateString()}
+                      </td>
+                      <td>{offer.trustScore || 5}/10</td>
+                      <td>
+                        <button
+                          className="view-offer-btn"
+                          onClick={() => fetchOfferDetails(offer.id)}
+                        >
+                          View Offer
+                        </button>
+                      </td>
+                    </tr>
+                  ))
+                )}
               </tbody>
             </table>
+          </div>
+        </section>
+
+        {/* Posted Loan Requests */}
+        <section className="borrower-section posted-section">
+          <div className="section-title">Posted Loan Requests</div>
+          <div className="section-desc">
+            Loans you've requested, waiting for lender acceptance.
+          </div>
+          <div className="posted-loans-grid">
+            {postedLoans.length === 0 ? (
+              <div className="posted-empty">No posted loan requests</div>
+            ) : (
+              postedLoans.map((loan) => (
+                <div className="posted-loan-card" key={loan.id}>
+                  <div className="loan-header">
+                    <div className="loan-amount">₹{loan.amount}</div>
+                    <span className="loan-status posted">Posted</span>
+                  </div>
+                  <div className="loan-details">
+                    <div>
+                      Max Interest: <b>{loan.maxInterestRate}%</b>
+                    </div>
+                    <div>
+                      Repayment: <b>{loan.repaymentDate}</b>
+                    </div>
+                    {loan.description && (
+                      <div className="loan-desc">{loan.description}</div>
+                    )}
+                  </div>
+                  <div className="loan-info">
+                    <div>Posted: {loan.postedDate}</div>
+                    <div>Status: {loan.status}</div>
+                  </div>
+                </div>
+              ))
+            )}
           </div>
         </section>
 
@@ -403,48 +523,48 @@ export default function BorrowerDashboard() {
           </section>
           {/* Create New Loan Offer - Right Side */}
           <section className="borrower-section create-loan-section smart-offer-section">
-        <div className="section-title">Create New Loan Request</div>
-        <div className="create-loan-form">
-          <input
-            type="number"
-            name="amount"
-            placeholder="Loan Amount (₹)"
-            value={newLoanForm.amount}
-            onChange={handleInputChange}
-          />
-          <input
-            type="number"
-            name="maxInterestRate"
-            placeholder="Max Interest Rate (%)"
-            value={newLoanForm.maxInterestRate}
-            onChange={handleInputChange}
-          />
-          <input
-            type="text"
-            name="repaymentDate"
-            placeholder="Repayment Date (YYYY-MM-DD)"
-            value={newLoanForm.repaymentDate}
-            onChange={handleInputChange}
-          />
-          <textarea
-            name="description"
-            placeholder="Brief Description"
-            value={newLoanForm.description}
-            onChange={handleInputChange}
-          />
-          <button 
-            className="post-loan-btn"
-            onClick={createLoanRequest}
-            disabled={
-              !newLoanForm.amount || 
-              !newLoanForm.maxInterestRate || 
-              !newLoanForm.repaymentDate
-            }
-          >
-            Post Loan Request
-          </button>
-        </div>
-      </section>
+            <div className="section-title">Create New Loan Request</div>
+            <div className="create-loan-form">
+              <input
+                type="number"
+                name="amount"
+                placeholder="Loan Amount (₹)"
+                value={newLoanForm.amount}
+                onChange={handleInputChange}
+              />
+              <input
+                type="number"
+                name="maxInterestRate"
+                placeholder="Max Interest Rate (%)"
+                value={newLoanForm.maxInterestRate}
+                onChange={handleInputChange}
+              />
+              <input
+                type="text"
+                name="repaymentDate"
+                placeholder="Repayment Date (YYYY-MM-DD)"
+                value={newLoanForm.repaymentDate}
+                onChange={handleInputChange}
+              />
+              <textarea
+                name="description"
+                placeholder="Brief Description"
+                value={newLoanForm.description}
+                onChange={handleInputChange}
+              />
+              <button
+                className="post-loan-btn"
+                onClick={createLoanRequest}
+                disabled={
+                  !newLoanForm.amount ||
+                  !newLoanForm.maxInterestRate ||
+                  !newLoanForm.repaymentDate
+                }
+              >
+                Post Loan Request
+              </button>
+            </div>
+          </section>
         </div>
 
         {/* Offer Modal */}
@@ -454,23 +574,41 @@ export default function BorrowerDashboard() {
               <div className="modal-title">Loan Offer Details</div>
               <div className="modal-content">
                 <div>
-                  <b>Lender:</b> {selectedOffer.lender}
+                  <b>Lender:</b>{" "}
+                  {selectedOffer.lenderName || selectedOffer.lender}
                 </div>
-                <div>
-                  <b>Location:</b> {selectedOffer.location}
-                </div>
+                {selectedOffer.lenderEmail && (
+                  <div>
+                    <b>Email:</b> {selectedOffer.lenderEmail}
+                  </div>
+                )}
                 <div>
                   <b>Amount:</b> ₹{selectedOffer.amount.toLocaleString()}
                 </div>
                 <div>
-                  <b>Interest:</b> {selectedOffer.interest}%
+                  <b>Interest:</b>{" "}
+                  {selectedOffer.interestRate || selectedOffer.interest}%
                 </div>
                 <div>
-                  <b>Repayment:</b> {selectedOffer.repayment}
+                  <b>Repayment:</b>{" "}
+                  {new Date(
+                    selectedOffer.repaymentDate || selectedOffer.repayment
+                  ).toLocaleDateString()}
                 </div>
+                {selectedOffer.description && (
+                  <div>
+                    <b>Description:</b> {selectedOffer.description}
+                  </div>
+                )}
                 <div>
-                  <b>Trust Score:</b> {selectedOffer.trustScore}/10
+                  <b>Status:</b> {selectedOffer.status || "AVAILABLE"}
                 </div>
+                {selectedOffer.createdAt && (
+                  <div>
+                    <b>Created:</b>{" "}
+                    {new Date(selectedOffer.createdAt).toLocaleString()}
+                  </div>
+                )}
               </div>
               <div className="modal-actions">
                 <button className="make-offer-btn" onClick={acceptOffer}>
@@ -483,7 +621,6 @@ export default function BorrowerDashboard() {
             </div>
           </div>
         )}
-
         {/* Popup */}
         {popup.show && (
           <div className="popup-overlay">

@@ -37,6 +37,15 @@ const LoginPage = () => {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(loginData),
       });
+       const userData = await response.json();
+
+    // Store user data (including name)
+    localStorage.setItem("user", JSON.stringify({
+      name: userData.name,
+      email: userData.email,
+      role: userData.role
+    }));
+
 
       if (!response.ok) {
         const resData = await response.json();
@@ -45,7 +54,7 @@ const LoginPage = () => {
         return;
       }
 
-      const userData = await response.json();
+  
 
       if (!userData.token) {
         setError("Login failed: No token received.");

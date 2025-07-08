@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import logo from "../assets/logo.png";
 import "./LenderDashboard.css";
+import { useNavigate } from "react-router-dom";
 
 const initialLoanOffers = [
   {
@@ -51,6 +52,7 @@ const initialActiveLoans = [
 ];
 
 export default function LenderDashboard() {
+  const navigate = useNavigate();
   const [loanOffers, setLoanOffers] = useState(initialLoanOffers);
   const [pendingPayments, setPendingPayments] = useState([]);
   const [activeLoans, setActiveLoans] = useState(initialActiveLoans);
@@ -64,6 +66,16 @@ export default function LenderDashboard() {
     repaymentDate: "",
     description: "",
   });
+  const userData = JSON.parse(localStorage.getItem("user"));
+  const userName = userData?.name || "User";
+    const handleLogout = () => {
+    // Clear user data from localStorage
+    localStorage.removeItem("token");
+    localStorage.removeItem("user");
+    
+    // Redirect to landing page
+    navigate("/");
+  };
 
   const handlePostLoanOffer = async () => {
     try {
@@ -195,7 +207,10 @@ export default function LenderDashboard() {
       {/* Navbar */}
       <nav className="lender-navbar">
         <div className="navbar-title">Lender Dashboard</div>
-        <button className="navbar-logout-btn">Logout</button>
+        
+        <button className="navbar-logout-btn" onClick={handleLogout}>
+          Logout
+        </button>
       </nav>
       <div className="lender-dashboard-root" style={{ minHeight: "100vh" }}>
         {/* Header */}
@@ -203,7 +218,8 @@ export default function LenderDashboard() {
           <div className="header-left">
             <img src={logo} alt="AarthaSathi Logo" className="lender-logo" />
             <div>
-              <div className="lender-title">Welcome back, Priya Sharma!</div>
+              <div className="lender-title">Welcome back, <span className="username">{userName}</span>
+        </div> 
               <div className="lender-desc">
                 Here's your lending dashboard where you can find loan requests
                 and manage your active loans.

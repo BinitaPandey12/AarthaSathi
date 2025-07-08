@@ -431,3 +431,91 @@ body,
   background-color: #fef3c7;
   color: #92400e;
 }
+
+
+/* Posted Loans Section */
+.posted-section {
+  background: #fff;
+  border-radius: 16px;
+  box-shadow: 0 4px 24px 0 rgba(44, 62, 80, 0.1);
+  padding: 28px 28px 22px 28px;
+  margin-bottom: 28px;
+}
+
+.posted-loans-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 18px;
+  margin-top: 16px;
+}
+
+.posted-loan-card {
+  background: #f6f7fb;
+  border-radius: 12px;
+  padding: 20px 24px;
+  box-shadow: 0 2px 8px 0 rgba(44, 62, 80, 0.07);
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.posted-loan-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px 0 rgba(44, 62, 80, 0.1);
+}
+
+.loan-amount {
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: #23223a;
+}
+
+.loan-status.posted {
+  background: #fef3c7;
+  color: #92400e;
+  font-size: 0.98rem;
+  font-weight: 700;
+  border-radius: 8px;
+  padding: 7px 18px;
+  margin-left: 8px;
+  letter-spacing: 0.01em;
+}
+
+.loan-desc {
+  color: #6b7280;
+  font-size: 0.95rem;
+  margin-top: 8px;
+  line-height: 1.4;
+}
+
+.posted-empty {
+  text-align: center;
+  padding: 40px 20px;
+  color: #6b7280;
+  font-style: italic;
+  grid-column: 1 / -1;
+}
+
+/* Responsive adjustments */
+@media (max-width: 900px) {
+  .posted-loans-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .posted-loan-card {
+    padding: 16px 18px;
+  }
+}
+
+@media (max-width: 600px) {
+  .posted-section {
+    padding: 16px 12px;
+  }
+  
+  .loan-amount {
+    font-size: 1.2rem;
+  }
+  
+  .loan-status.posted {
+    padding: 5px 12px;
+    font-size: 0.9rem;
+  }
+}
