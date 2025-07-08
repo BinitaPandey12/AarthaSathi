@@ -20,7 +20,7 @@ public class CustomAccessDeniedHandler implements AccessDeniedHandler {
             throws IOException, ServletException {
         response.setStatus(HttpServletResponse.SC_FORBIDDEN); //ell the client what happened (403 = Forbidden) otherwise it would mislead as (200 OK,=success)
         response.setContentType("application/json");
-        response.getWriter().write("{\"error\": \"Only access to admin\"}");
+//        response.getWriter().write("{\"error\": \"Only access to admin\"}");
         response.getWriter().flush();
     }
 }
