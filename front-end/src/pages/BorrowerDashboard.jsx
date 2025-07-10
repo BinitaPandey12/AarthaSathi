@@ -2,11 +2,6 @@ import React, { useState, useEffect } from "react";
 import logo from "../assets/logo.png";
 import "./BorrowerDashboard.css";
 import { useNavigate } from "react-router-dom";
-<<<<<<< HEAD
-=======
-
-
->>>>>>> more update
 
 export default function BorrowerDashboard() {
   const navigate = useNavigate();
